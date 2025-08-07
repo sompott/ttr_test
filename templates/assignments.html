@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}การผูกอุปกรณ์ - IT Equipment Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-link"></i> การผูกอุปกรณ์</h1>
+    <a href="{{ url_for('add_assignment') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> ผูกอุปกรณ์
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>พนักงาน</th>
+                        <th>รหัสอุปกรณ์</th>
+                        <th>ประเภท</th>
+                        <th>ยี่ห้อ/รุ่น</th>
+                        <th>วันที่รับ</th>
+                        <th>สถานะ</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assign in assignments %}
+                    <tr>
+                        <td>
+                            <strong>{{ assign.emp_code }}</strong><br>
+                            <small>{{ assign.employee_name }}</small>
+                        </td>
+                        <td><code>{{ assign.equipment_code }}</code></td>
+                        <td><i class="fas fa-desktop"></i> {{ assign.type_name }}</td>
+                        <td>{{ assign.brand }} {{ assign.model }}</td>
+                        <td>{{ assign.assigned_date }}</td>
+                        <td>
+                            {% if assign.assignment_status == 'active' %}
+                                <span class="badge bg-success">กำลังใช้งาน</span>
+                            {% else %}
+                                <span class="badge bg-secondary">คืนแล้ว</span>
+                                {% if assign.return_date %}
+                                    <br><small class="text-muted">คืนเมื่อ: {{ assign.return_date }}</small>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if assign.assignment_status == 'active' %}
+                                <form method="POST" action="{{ url_for('cancel_assignment', assignment_id=assign.assignment_id) }}" 
+                                      style="display: inline;" 
+                                      onsubmit="return confirm('คุณต้องการยกเลิกการผูกอุปกรณ์นี้หรือไม่?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-unlink"></i> ยกเลิกการผูก
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="text-muted small">การผูกสิ้นสุดแล้ว</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal สำหรับยืนยันการยกเลิก -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // เพิ่ม animation เมื่อ hover ปุ่ม
+    const cancelButtons = document.querySelectorAll('.btn-outline-danger');
+    cancelButtons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.classList.add('btn-danger');
+            this.classList.remove('btn-outline-danger');
+        });
+        button.addEventListener('mouseleave', function() {
+            this.classList.add('btn-outline-danger');
+            this.classList.remove('btn-danger');
+        });
+    });
+});
+</script>
+{% endblock %}

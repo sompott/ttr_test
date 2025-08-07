@@ -1,0 +1,116 @@
+
+{% extends "base.html" %}
+
+{% block title %}เพิ่ม License - IT Equipment Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-key"></i> เพิ่ม Software License</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="software_name" class="form-label">ชื่อ Software *</label>
+                                <input type="text" class="form-control" id="software_name" name="software_name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="version" class="form-label">Version</label>
+                                <input type="text" class="form-control" id="version" name="version">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="license_key" class="form-label">License Key *</label>
+                        <input type="text" class="form-control" id="license_key" name="license_key" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="license_type_id" class="form-label">ประเภท License *</label>
+                                <select class="form-select" id="license_type_id" name="license_type_id" required>
+                                    <option value="">เลือกประเภท</option>
+                                    {% for type in license_types %}
+                                    <option value="{{ type.license_type_id }}">{{ type.type_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="format_id" class="form-label">รูปแบบ License *</label>
+                                <select class="form-select" id="format_id" name="format_id" required>
+                                    <option value="">เลือกรูปแบบ</option>
+                                    {% for format in license_formats %}
+                                    <option value="{{ format.format_id }}">{{ format.format_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="max_installations" class="form-label">จำนวนที่ติดตั้งได้ *</label>
+                                <input type="number" class="form-control" id="max_installations" name="max_installations" 
+                                       min="1" value="1" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="vendor" class="form-label">ผู้จำหน่าย</label>
+                                <input type="text" class="form-control" id="vendor" name="vendor">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="price" class="form-label">ราคา</label>
+                                <input type="number" class="form-control" id="price" name="price" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="purchase_date" class="form-label">วันที่ซื้อ</label>
+                                <input type="date" class="form-control" id="purchase_date" name="purchase_date">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="expiry_date" class="form-label">วันหมดอายุ</label>
+                                <input type="date" class="form-control" id="expiry_date" name="expiry_date">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">หมายเหตุ</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> บันทึก
+                        </button>
+                        <a href="{{ url_for('licenses') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> กลับ
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

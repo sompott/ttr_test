@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}การติดตั้ง License - IT Equipment Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-download"></i> การติดตั้ง License</h1>
+    <a href="{{ url_for('add_license_installation') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> ติดตั้ง License
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Software</th>
+                        <th>License Key</th>
+                        <th>อุปกรณ์</th>
+                        <th>ประเภทอุปกรณ์</th>
+                        <th>ยี่ห้อ/รุ่น</th>
+                        <th>วันที่ติดตั้ง</th>
+                        <th>สถานะ</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for install in installations %}
+                    <tr>
+                        <td>
+                            <strong>{{ install.software_name }}</strong><br>
+                            <small class="text-muted">Version {{ install.version }}</small>
+                        </td>
+                        <td><code class="small">{{ install.license_key }}</code></td>
+                        <td><strong>{{ install.equipment_code }}</strong></td>
+                        <td><i class="fas fa-desktop"></i> {{ install.type_name }}</td>
+                        <td>{{ install.brand }} {{ install.model }}</td>
+                        <td>{{ install.installed_date }}</td>
+                        <td>
+                            <span class="badge {% if install.installation_status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ 'ติดตั้งแล้ว' if install.installation_status == 'active' else 'ถอนการติดตั้งแล้ว' }}
+                            </span>
+                            {% if install.installation_status != 'active' and install.uninstalled_date %}
+                                <br><small class="text-muted">{{ install.uninstalled_date }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if install.installation_status == 'active' %}
+                                <button type="button" class="btn btn-danger btn-sm" 
+                                        onclick="uninstallLicense({{ install.installation_id }})"
+                                        data-bs-toggle="tooltip" 
+                                        data-bs-placement="top" 
+                                        title="ถอนการติดตั้ง License">
+                                    <i class="fas fa-times"></i> ยกเลิก
+                                </button>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal สำหรับยืนยันการถอนการติดตั้ง -->
+<div class="modal fade" id="uninstallModal" tabindex="-1" aria-labelledby="uninstallModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uninstallModalLabel">ยืนยันการถอนการติดตั้ง</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>คุณต้องการถอนการติดตั้ง License นี้หรือไม่?</p>
+                <p class="text-warning"><i class="fas fa-exclamation-triangle"></i> การดำเนินการนี้ไม่สามารถยกเลิกได้</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                <form id="uninstallForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-times"></i> ถอนการติดตั้ง
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function uninstallLicense(installationId) {
+    // Set the form action URL
+    document.getElementById('uninstallForm').action = '/uninstall_license/' + installationId;
+    
+    // Show the modal
+    var modal = new bootstrap.Modal(document.getElementById('uninstallModal'));
+    modal.show();
+}
+
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

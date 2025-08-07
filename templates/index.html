@@ -1,0 +1,143 @@
+<!-- index.html -->
+{% extends "base.html" %}
+
+{% block title %}Dashboard - IT Equipment Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+</div>
+
+<!-- สรุปจำนวนพนักงาน -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card card-stats">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-8">
+                        <div class="numbers">
+                            <p class="card-category">พนักงานทั้งหมด</p>
+                            <p class="card-title">{{ employee_count.total }}
+                                <small>คน (ใช้งาน {{ employee_count.active }} คน)</small>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="icon-big text-center">
+                            <i class="fas fa-users fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- สรุปอุปกรณ์ -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-laptop"></i> สรุปอุปกรณ์</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ประเภทอุปกรณ์</th>
+                                <th>ทั้งหมด</th>
+                                <th>ว่าง</th>
+                                <th>กำลังใช้งาน</th>
+                                <th>ซ่อมบำรุง</th>
+                                <th>อัตราการใช้งาน</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in equipment_summary %}
+                            <tr>
+                                <td><i class="fas fa-desktop"></i> {{ item.type_name }}</td>
+                                <td><span class="badge bg-secondary">{{ item.total }}</span></td>
+                                <td><span class="badge bg-success">{{ item.available }}</span></td>
+                                <td><span class="badge bg-primary">{{ item.assigned }}</span></td>
+                                <td><span class="badge bg-warning">{{ item.maintenance }}</span></td>
+                                <td>
+                                    {% if item.total > 0 %}
+                                        {% set usage_rate = (item.assigned / item.total * 100) | round(1) %}
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ usage_rate }}%">
+                                                {{ usage_rate }}%
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- สรุป License -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-key"></i> สรุป Software License</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ประเภท License</th>
+                                <th>รูปแบบ</th>
+                                <th>จำนวน License</th>
+                                <th>ใช้งานแล้ว</th>
+                                <th>ที่ใช้ได้ทั้งหมด</th>
+                                <th>อัตราการใช้งาน</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in license_summary %}
+                                {% if item.total > 0 %}
+                                <tr>
+                                    <td><i class="fas fa-key"></i> {{ item.type_name }}</td>
+                                    <td><span class="badge bg-info">{{ item.format_name }}</span></td>
+                                    <td><span class="badge bg-secondary">{{ item.total }}</span></td>
+                                    <td><span class="badge bg-primary">{{ item.used }}</span></td>
+                                    <td><span class="badge bg-success">{{ item.available_slots }}</span></td>
+                                    <td>
+                                        {% if item.available_slots > 0 %}
+                                            {% set usage_rate = (item.used / item.available_slots * 100) | round(1) %}
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar 
+                                                    {% if usage_rate > 90 %}bg-danger
+                                                    {% elif usage_rate > 70 %}bg-warning
+                                                    {% else %}bg-success
+                                                    {% endif %}" 
+                                                     role="progressbar" style="width: {{ usage_rate }}%">
+                                                    {{ usage_rate }}%
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

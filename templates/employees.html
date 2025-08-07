@@ -1,0 +1,99 @@
+<!-- employees.html -->
+{% extends "base.html" %}
+
+{% block title %}จัดการพนักงาน - IT Equipment Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-users"></i> จัดการพนักงาน</h1>
+    <a href="{{ url_for('add_employee') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> เพิ่มพนักงาน
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>รหัสพนักงาน</th>
+                        <th>ชื่อ-สกุล</th>
+                        <th>แผนก</th>
+                        <th>ตำแหน่ง</th>
+                        <th>อีเมล</th>
+                        <th>โทรศัพท์</th>
+                        <th>สถานะ</th>
+                        <th>การจัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in employees %}
+                    <tr>
+                        <td><strong>{{ emp.emp_code }}</strong></td>
+                        <td>{{ emp.first_name }} {{ emp.last_name }}</td>
+                        <td>{{ emp.department }}</td>
+                        <td>{{ emp.position }}</td>
+                        <td>{{ emp.email }}</td>
+                        <td>{{ emp.phone }}</td>
+                        <td>
+                            <span class="badge {% if emp.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ 'ใช้งาน' if emp.status == 'active' else 'ไม่ใช้งาน' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="viewEquipment({{ emp.emp_id }})">
+                                <i class="fas fa-laptop"></i> ดูอุปกรณ์
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal แสดงอุปกรณ์ของพนักงาน -->
+<div class="modal fade" id="equipmentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">อุปกรณ์ที่ใช้งาน</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="equipmentList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewEquipment(empId) {
+    $.get('/api/equipment_by_employee/' + empId, function(data) {
+        let html = '';
+        if (data.length > 0) {
+            html = '<div class="table-responsive"><table class="table table-sm">';
+            html += '<thead><tr><th>รหัสอุปกรณ์</th><th>ประเภท</th><th>ยี่ห้อ</th><th>รุ่น</th><th>วันที่รับ</th></tr></thead><tbody>';
+            data.forEach(function(item) {
+                html += '<tr>';
+                html += '<td>' + item.equipment_code + '</td>';
+                html += '<td>' + item.type_name + '</td>';
+                html += '<td>' + item.brand + '</td>';
+                html += '<td>' + item.model + '</td>';
+                html += '<td>' + item.assigned_date + '</td>';
+                html += '</tr>';
+            });
+            html += '</tbody></table></div>';
+        } else {
+            html = '<p class="text-muted">ไม่มีอุปกรณ์ที่ใช้งาน</p>';
+        }
+        $('#equipmentList').html(html);
+        $('#equipmentModal').modal('show');
+    });
+}
+</script>
+{% endblock %}

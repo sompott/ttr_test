@@ -1,0 +1,65 @@
+
+{% extends "base.html" %}
+
+{% block title %}ติดตั้ง License - IT Equipment Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-download"></i> ติดตั้ง License</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="license_id" class="form-label">เลือก License *</label>
+                        <select class="form-select" id="license_id" name="license_id" required>
+                            <option value="">เลือก License</option>
+                            {% for license in licenses %}
+                            <option value="{{ license.license_id }}">
+                                {{ license.software_name }} {{ license.version }} 
+                                ({{ license.current_installations }}/{{ license.max_installations }} ใช้งาน)
+                                - {{ license.license_key[:20] }}...
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="equipment_id" class="form-label">เลือกอุปกรณ์ *</label>
+                        <select class="form-select" id="equipment_id" name="equipment_id" required>
+                            <option value="">เลือกอุปกรณ์</option>
+                            {% for eq in equipments %}
+                            <option value="{{ eq.equipment_id }}">
+                                {{ eq.equipment_code }} - {{ eq.type_name }} ({{ eq.brand }} {{ eq.model }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="installed_date" class="form-label">วันที่ติดตั้ง *</label>
+                        <input type="date" class="form-control" id="installed_date" name="installed_date" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">หมายเหตุ</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> บันทึก
+                        </button>
+                        <a href="{{ url_for('license_installations') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> กลับ
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

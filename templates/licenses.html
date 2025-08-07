@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Software License - IT Equipment Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-key"></i> Software License</h1>
+    <a href="{{ url_for('add_license') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> เพิ่ม License
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Software</th>
+                        <th>License Key</th>
+                        <th>ประเภท</th>
+                        <th>รูปแบบ</th>
+                        <th>การใช้งาน</th>
+                        <th>สถานะ</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for license in licenses %}
+                    <tr>
+                        <td>
+                            <strong>{{ license.software_name }}</strong><br>
+                            <small class="text-muted">Version {{ license.version }}</small>
+                        </td>
+                        <td>
+                            <code class="small">{{ license.license_key }}</code>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ license.type_name }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ license.format_name }}</span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span class="me-2">{{ license.current_installations }}/{{ license.max_installations }}</span>
+                                <div class="progress flex-grow-1" style="height: 15px;">
+                                    {% set usage_percent = (license.current_installations / license.max_installations * 100) | round(0) %}
+                                    <div class="progress-bar 
+                                        {% if usage_percent >= 100 %}bg-danger
+                                        {% elif usage_percent >= 80 %}bg-warning
+                                        {% else %}bg-success
+                                        {% endif %}" 
+                                         style="width: {{ usage_percent }}%">
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if license.status == 'active' %}bg-success
+                                {% elif license.status == 'expired' %}bg-danger
+                                {% elif license.status == 'cancelled' %}bg-dark
+                                {% else %}bg-warning
+                                {% endif %}">
+                                {% if license.status == 'active' %}ใช้งานได้
+                                {% elif license.status == 'expired' %}หมดอายุ
+                                {% elif license.status == 'cancelled' %}ถูกยกเลิก
+                                {% else %}ระงับ
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            {% if license.status == 'active' %}
+                                <button class="btn btn-danger btn-sm" onclick="cancelLicense({{ license.license_id }}, '{{ license.software_name }}')">
+                                    <i class="fas fa-times"></i> ยกเลิก
+                                </button>
+                            {% elif license.status == 'cancelled' %}
+                                <button class="btn btn-success btn-sm" onclick="reactivateLicense({{ license.license_id }}, '{{ license.software_name }}')">
+                                    <i class="fas fa-redo"></i> เปิดใช้งาน
+                                </button>
+                            {% else %}
+                                <button class="btn btn-secondary btn-sm" disabled>
+                                    <i class="fas fa-times"></i> 
+                                    {% if license.status == 'expired' %}หมดอายุแล้ว
+                                    {% else %}ไม่สามารถจัดการได้
+                                    {% endif %}
+                                </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Confirmation Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelModalLabel">ยืนยันการยกเลิก License</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>คุณต้องการยกเลิก License สำหรับ <strong id="cancelSoftwareName"></strong> หรือไม่?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    การยกเลิก License จะทำให้ไม่สามารถใช้งานซอฟต์แวร์นี้ได้อีกต่อไป
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                <button type="button" class="btn btn-danger" id="confirmCancel">ยืนยันการยกเลิก</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reactivate Confirmation Modal -->
+<div class="modal fade" id="reactivateModal" tabindex="-1" aria-labelledby="reactivateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reactivateModalLabel">ยืนยันการเปิดใช้งาน License</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>คุณต้องการเปิดใช้งาน License สำหรับ <strong id="reactivateSoftwareName"></strong> หรือไม่?</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    การเปิดใช้งานจะทำให้สามารถใช้ License นี้ได้อีกครั้ง
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                <button type="button" class="btn btn-success" id="confirmReactivate">ยืนยันการเปิดใช้งาน</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let licenseToCancel = null;
+    let licenseToReactivate = null;
+
+    function cancelLicense(licenseId, softwareName) {
+        licenseToCancel = licenseId;
+        document.getElementById('cancelSoftwareName').textContent = softwareName;
+        
+        const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+        cancelModal.show();
+    }
+
+    function reactivateLicense(licenseId, softwareName) {
+        licenseToReactivate = licenseId;
+        document.getElementById('reactivateSoftwareName').textContent = softwareName;
+        
+        const reactivateModal = new bootstrap.Modal(document.getElementById('reactivateModal'));
+        reactivateModal.show();
+    }
+
+    document.getElementById('confirmCancel').addEventListener('click', function() {
+        if (licenseToCancel) {
+            fetch('{{ url_for("cancel_license") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    license_id: licenseToCancel
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('เกิดข้อผิดพลาด: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+            });
+
+            const cancelModal = bootstrap.Modal.getInstance(document.getElementById('cancelModal'));
+            cancelModal.hide();
+        }
+    });
+
+    document.getElementById('confirmReactivate').addEventListener('click', function() {
+        if (licenseToReactivate) {
+            fetch('{{ url_for("reactivate_license") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    license_id: licenseToReactivate
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('เกิดข้อผิดพลาด: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+            });
+
+            const reactivateModal = bootstrap.Modal.getInstance(document.getElementById('reactivateModal'));
+            reactivateModal.hide();
+        }
+    });
+</script>
+{% endblock %}

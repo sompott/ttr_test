@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}จัดการอุปกรณ์ - IT Equipment Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-laptop"></i> จัดการอุปกรณ์</h1>
+    <a href="{{ url_for('add_equipment') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> เพิ่มอุปกรณ์
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>รหัสอุปกรณ์</th>
+                        <th>ประเภท</th>
+                        <th>ยี่ห้อ/รุ่น</th>
+                        <th>Serial Number</th>
+                        <th>สถานะ</th>
+                        <th>กำลังใช้งานโดย</th>
+                        <!-- <th>จัดการ</th> -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eq in equipments %}
+                    <tr>
+                        <td><strong>{{ eq.equipment_code }}</strong></td>
+                        <td>
+                            <i class="fas fa-desktop"></i> {{ eq.type_name }}
+                        </td>
+                        <td>{{ eq.brand }} {{ eq.model }}</td>
+                        <td><code>{{ eq.serial_number }}</code></td>
+                        <td>
+                            <span class="badge 
+                                {% if eq.status == 'available' %}bg-success
+                                {% elif eq.status == 'assigned' %}bg-primary
+                                {% elif eq.status == 'maintenance' %}bg-warning
+                                {% else %}bg-secondary
+                                {% endif %}">
+                                {% if eq.status == 'available' %}ว่าง
+                                {% elif eq.status == 'assigned' %}กำลังใช้งาน
+                                {% elif eq.status == 'maintenance' %}ซ่อมบำรุง
+                                {% else %}{{ eq.status }}
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            {% if eq.assigned_to %}
+                                <i class="fas fa-user"></i> {{ eq.assigned_to }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- คำเตือนเพิ่มเติม -->
+<!-- <div class="alert alert-info mt-3">
+    <i class="fas fa-info-circle"></i>
+    <strong>หมายเหตุ:</strong> สามารถลบได้เฉพาะอุปกรณ์ที่สถานะเป็น "ว่าง" เท่านั้น อุปกรณ์ที่กำลังใช้งานหรือมี License ติดตั้งอยู่จะไม่สามารถลบได้
+</div> -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // เพิ่ม animation เมื่อ hover ปุ่มลบ
+    const deleteButtons = document.querySelectorAll('.btn-outline-danger');
+    deleteButtons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.classList.add('btn-danger');
+            this.classList.remove('btn-outline-danger');
+        });
+        button.addEventListener('mouseleave', function() {
+            this.classList.add('btn-outline-danger');
+            this.classList.remove('btn-danger');
+        });
+    });
+});
+</script>
+{% endblock %}
